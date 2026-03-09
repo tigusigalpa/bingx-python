@@ -16,6 +16,8 @@ trading, copy trading, sub-accounts, WebSocket streaming. 170+ methods.
 
 > Also available: **[PHP SDK](https://github.com/tigusigalpa/bingx-php)** · **[Go SDK](https://github.com/tigusigalpa/bingx-go)** · **[PyPI](https://pypi.org/project/bingx-python/)**
 
+> 📖 **[Full documentation available on Wiki](https://github.com/tigusigalpa/bingx-python/wiki)**
+
 ## Table of Contents
 
 - [Features](#features)
