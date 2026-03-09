@@ -1,6 +1,6 @@
 # BingX Python SDK
 
-![Bybit Python SDK](https://github.com/user-attachments/assets/fa11cd06-5379-4f01-8ded-62324c8b5f19)
+![BingX Python SDK](https://github.com/user-attachments/assets/fa11cd06-5379-4f01-8ded-62324c8b5f19)
 
 <div align="center">
 
@@ -14,7 +14,7 @@
 Python client for the [BingX](https://bingx.com) cryptocurrency exchange API. USDT-M and Coin-M perpetual futures, spot
 trading, copy trading, sub-accounts, WebSocket streaming. 170+ methods.
 
-> Also available: **[PHP SDK](https://github.com/tigusigalpa/bingx-php)** · **[Go SDK](https://github.com/tigusigalpa/bingx-go)**
+> Also available: **[PHP SDK](https://github.com/tigusigalpa/bingx-php)** · **[Go SDK](https://github.com/tigusigalpa/bingx-go)** · **[PyPI](https://pypi.org/project/bingx-python/)**
 
 ## Table of Contents
 
