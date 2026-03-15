@@ -74,30 +74,41 @@ class SpotAccountService:
     def internal_transfer(
         self,
         coin: str,
-        wallet_type: str,
+        wallet_type: int,
         amount: float,
-        transfer_type: str,
-        sub_uid: Optional[str] = None,
+        user_account_type: int,
+        user_account: str,
+        calling_code: Optional[str] = None,
+        transfer_client_id: Optional[str] = None,
+        recv_window: Optional[int] = None,
     ) -> Dict[str, Any]:
         """
-        Internal transfer (main <-> sub account)
+        Internal transfer (main account internal transfer)
 
         Args:
             coin: Coin name
-            wallet_type: Wallet type (SPOT, PERPETUAL)
+            wallet_type: Wallet type (1=Fund Account, 2=Standard Futures, 3=Perpetual Futures, 4=Spot Account)
             amount: Transfer amount
-            transfer_type: Transfer type (FROM_MAIN_TO_SUB, FROM_SUB_TO_MAIN)
-            sub_uid: Sub-account UID
+            user_account_type: User account type (1=UID, 2=Phone number, 3=Email)
+            user_account: User account (UID, phone number, or email)
+            calling_code: Area code for telephone (required when user_account_type=2)
+            transfer_client_id: Custom ID for internal transfer (alphanumeric, max 100 chars)
+            recv_window: Request validity time window in milliseconds
         """
         params = {
             "coin": coin,
             "walletType": wallet_type,
             "amount": amount,
-            "transferType": transfer_type,
+            "userAccountType": user_account_type,
+            "userAccount": user_account,
         }
-        if sub_uid:
-            params["subUid"] = sub_uid
-        return self.client.request("POST", "/openApi/api/v3/asset/internal/transfer", params)
+        if calling_code:
+            params["callingCode"] = calling_code
+        if transfer_client_id:
+            params["transferClientId"] = transfer_client_id
+        if recv_window is not None:
+            params["recvWindow"] = recv_window
+        return self.client.request("POST", "/openApi/wallets/v1/capital/innerTransfer/apply", params)
 
     def get_all_account_balances(self) -> Dict[str, Any]:
         """Get all account balances"""

@@ -26,8 +26,15 @@ class MarketService:
         return self.client.request("GET", "/openApi/swap/v2/market/symbols")
 
     def get_spot_symbols(self) -> Dict[str, Any]:
-        """Get spot trading symbols"""
-        return self.client.request("GET", "/openApi/spot/v1/market/symbols")
+        """
+        Get spot trading symbols
+        
+        Response includes:
+        - maxMarketNotional: Maximum notional amount for a single market order
+        - status: Symbol status (0=Offline, 1=Online, 5=Pre-open, 10=Accessed, 
+                  25=Suspended, 29=Pre-Delisted, 30=Delisted)
+        """
+        return self.client.request("GET", "/openApi/spot/v1/common/symbols")
 
     def get_all_symbols(self) -> Dict[str, Any]:
         """Get all available symbols (both spot and futures)"""
@@ -107,23 +114,27 @@ class MarketService:
         limit: int = 500,
         start_time: Optional[int] = None,
         end_time: Optional[int] = None,
+        time_zone: Optional[int] = None,
     ) -> Dict[str, Any]:
         """
         Get candlestick data for spot
 
         Args:
             symbol: Trading symbol
-            interval: Kline interval (1m, 5m, 15m, 30m, 1h, 4h, 1d, etc.)
-            limit: Number of klines to return
+            interval: Kline interval (1m, 3m, 5m, 15m, 30m, 1h, 2h, 4h, 6h, 8h, 12h, 1d, 3d, 1w, 1M)
+            limit: Number of klines to return (max 1440)
             start_time: Start time in milliseconds
             end_time: End time in milliseconds
+            time_zone: Timezone offset (0=UTC (default), 8=UTC+8)
         """
         params = {"symbol": symbol, "interval": interval, "limit": limit}
         if start_time:
             params["startTime"] = start_time
         if end_time:
             params["endTime"] = end_time
-        return self.client.request("GET", "/openApi/spot/v1/market/klines", params)
+        if time_zone is not None:
+            params["timeZone"] = time_zone
+        return self.client.request("GET", "/openApi/spot/v2/market/kline", params)
 
     def get_24hr_ticker(self, symbol: Optional[str] = None) -> Dict[str, Any]:
         """

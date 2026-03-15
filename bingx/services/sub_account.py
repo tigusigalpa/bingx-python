@@ -180,38 +180,41 @@ class SubAccountService:
     def sub_account_internal_transfer(
         self,
         coin: str,
-        wallet_type: str,
+        wallet_type: int,
         amount: float,
-        transfer_type: str,
-        from_sub_uid: Optional[str] = None,
-        to_sub_uid: Optional[str] = None,
-        client_id: Optional[str] = None,
+        user_account_type: int,
+        user_account: str,
+        calling_code: Optional[str] = None,
+        transfer_client_id: Optional[str] = None,
+        recv_window: Optional[int] = None,
     ) -> Dict[str, Any]:
         """
-        Internal transfer between main and sub-accounts
+        Sub-account internal transfer
 
         Args:
             coin: Coin name
-            wallet_type: Wallet type (SPOT, PERPETUAL)
+            wallet_type: Wallet type (1=Fund Account, 2=Standard Futures, 3=Perpetual Futures, 15=Spot Account)
             amount: Transfer amount
-            transfer_type: Transfer type (FROM_MAIN_TO_SUB, FROM_SUB_TO_MAIN, FROM_SUB_TO_SUB)
-            from_sub_uid: Source sub-account UID (for FROM_SUB_TO_MAIN or FROM_SUB_TO_SUB)
-            to_sub_uid: Destination sub-account UID (for FROM_MAIN_TO_SUB or FROM_SUB_TO_SUB)
-            client_id: Client ID (optional)
+            user_account_type: User account type (1=UID, 2=Phone number, 3=Email)
+            user_account: User account (UID, phone number, or email)
+            calling_code: Phone area code (required when user_account_type=2)
+            transfer_client_id: Client-defined internal transfer ID (alphanumeric, max 100 chars)
+            recv_window: Request validity time window in milliseconds
         """
         params = {
             "coin": coin,
             "walletType": wallet_type,
             "amount": amount,
-            "transferType": transfer_type,
+            "userAccountType": user_account_type,
+            "userAccount": user_account,
         }
-        if from_sub_uid:
-            params["fromSubUid"] = from_sub_uid
-        if to_sub_uid:
-            params["toSubUid"] = to_sub_uid
-        if client_id:
-            params["clientId"] = client_id
-        return self.client.request("POST", "/openApi/api/v3/sub-account/internal/transfer", params)
+        if calling_code:
+            params["callingCode"] = calling_code
+        if transfer_client_id:
+            params["transferClientId"] = transfer_client_id
+        if recv_window is not None:
+            params["recvWindow"] = recv_window
+        return self.client.request("POST", "/openApi/wallets/v1/capital/subAccountInnerTransfer/apply", params)
 
     def get_sub_account_internal_transfer_records(
         self,
@@ -357,3 +360,130 @@ class SubAccountService:
         if end_time:
             params["endTime"] = end_time
         return self.client.request("GET", "/openApi/api/v3/sub-account/deposit/history", params)
+
+    def sub_mother_account_asset_transfer(
+        self,
+        asset_name: str,
+        transfer_amount: float,
+        from_uid: int,
+        from_type: int,
+        from_account_type: int,
+        to_uid: int,
+        to_type: int,
+        to_account_type: int,
+        remark: str,
+        recv_window: Optional[int] = None,
+    ) -> Dict[str, Any]:
+        """
+        Sub-Mother Account Asset Transfer Interface
+        
+        Note: This endpoint is only available to the master account.
+
+        Args:
+            asset_name: Asset name (e.g., USDT)
+            transfer_amount: Transfer amount
+            from_uid: Payer UID
+            from_type: Payer sub-account type (1=Parent account, 2=Sub-account)
+            from_account_type: Payer account type (1=Funding, 2=Standard futures, 3=Perpetual U-based, 15=Spot)
+            to_uid: Receiver UID
+            to_type: Receiver sub-account type (1=Parent account, 2=Sub-account)
+            to_account_type: Receiver account type (1=Funding, 2=Standard futures, 3=Perpetual U-based, 15=Spot)
+            remark: Transfer remarks
+            recv_window: Execution window time (cannot exceed 60000)
+            
+        Returns:
+            Response with tranId (transfer record ID)
+        """
+        params = {
+            "assetName": asset_name,
+            "transferAmount": transfer_amount,
+            "fromUid": from_uid,
+            "fromType": from_type,
+            "fromAccountType": from_account_type,
+            "toUid": to_uid,
+            "toType": to_type,
+            "toAccountType": to_account_type,
+            "remark": remark,
+        }
+        if recv_window is not None:
+            params["recvWindow"] = recv_window
+        return self.client.request("POST", "/openApi/account/transfer/v1/subAccount/transferAsset", params)
+
+    def get_sub_mother_account_transferable_amount(
+        self,
+        from_uid: int,
+        from_account_type: int,
+        to_uid: int,
+        to_account_type: int,
+        recv_window: Optional[int] = None,
+    ) -> Dict[str, Any]:
+        """
+        Query Sub-Mother Account Transferable Amount
+        
+        Note: This endpoint is only available to the master account.
+
+        Args:
+            from_uid: Payer UID
+            from_account_type: Payer account type (1=Funding, 2=Standard futures, 3=Perpetual U-Based)
+            to_uid: Receiver UID
+            to_account_type: Receiver account type (1=Funding, 2=Standard futures, 3=Perpetual U-Based)
+            recv_window: Execution window time (cannot exceed 60000)
+            
+        Returns:
+            Response with coins array containing id, name, and availableAmount
+        """
+        params = {
+            "fromUid": from_uid,
+            "fromAccountType": from_account_type,
+            "toUid": to_uid,
+            "toAccountType": to_account_type,
+        }
+        if recv_window is not None:
+            params["recvWindow"] = recv_window
+        return self.client.request("POST", "/openApi/account/transfer/v1/subAccount/transferAsset/supportCoins", params)
+
+    def get_sub_mother_account_transfer_history(
+        self,
+        uid: int,
+        type_: Optional[str] = None,
+        tran_id: Optional[str] = None,
+        start_time: Optional[int] = None,
+        end_time: Optional[int] = None,
+        page_id: Optional[int] = None,
+        paging_size: Optional[int] = None,
+        recv_window: Optional[int] = None,
+    ) -> Dict[str, Any]:
+        """
+        Query Sub-Mother Account Transfer History
+        
+        Note: This endpoint is only available to the master account.
+
+        Args:
+            uid: UID to query
+            type_: Transfer type filter (optional)
+            tran_id: Transfer ID (optional)
+            start_time: Start time in milliseconds (optional)
+            end_time: End time in milliseconds (optional)
+            page_id: Current page (default 1)
+            paging_size: Page size (default 10, max 100)
+            recv_window: Execution window time (cannot exceed 60000)
+            
+        Returns:
+            Response with total count and rows array
+        """
+        params = {"uid": uid}
+        if type_:
+            params["type"] = type_
+        if tran_id:
+            params["tranId"] = tran_id
+        if start_time is not None:
+            params["startTime"] = start_time
+        if end_time is not None:
+            params["endTime"] = end_time
+        if page_id is not None:
+            params["pageId"] = page_id
+        if paging_size is not None:
+            params["pagingSize"] = paging_size
+        if recv_window is not None:
+            params["recvWindow"] = recv_window
+        return self.client.request("GET", "/openApi/account/transfer/v1/subAccount/asset/transferHistory", params)

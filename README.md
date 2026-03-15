@@ -175,6 +175,12 @@ import time
 start_ts = int(time.mktime(time.strptime("2024-01-01", "%Y-%m-%d")) * 1000)
 end_ts = int(time.mktime(time.strptime("2024-01-02", "%Y-%m-%d")) * 1000)
 klines = client.market().get_klines("BTC-USDT", "1h", 100, start_ts, end_ts)
+
+# Spot klines with timezone (v2 endpoint)
+# time_zone: 0=UTC (default), 8=UTC+8
+spot_klines = client.market().get_spot_klines(
+    "BTC-USDT", "1h", 100, start_ts, end_ts, time_zone=8
+)
 ```
 
 #### Funding Rate, Mark Price
@@ -360,9 +366,18 @@ transfer = client.spot_account().universal_transfer(
 
 history = client.spot_account().get_asset_transfer_records(type_="FUND_PFUTURES")
 
+# Internal transfer (main account internal transfer)
+# wallet_type: 1=Fund Account, 2=Standard Futures, 3=Perpetual Futures, 4=Spot Account
+# user_account_type: 1=UID, 2=Phone number, 3=Email
 internal = client.spot_account().internal_transfer(
-    coin="USDT", wallet_type="SPOT", amount=50.0,
-    transfer_type="FROM_MAIN_TO_SUB", sub_uid="123456"
+    coin="USDT",
+    wallet_type=4,  # Spot Account
+    amount=50.0,
+    user_account_type=1,  # UID
+    user_account="123456",
+    calling_code=None,  # Required when user_account_type=2
+    transfer_client_id="transfer-001",  # Optional custom ID
+    recv_window=None
 )
 
 all_balances = client.spot_account().get_all_account_balances()
@@ -398,9 +413,55 @@ client.sub_account().delete_sub_account_api_key("sub_account_001", "your_api_key
 #### Transfers
 
 ```python
+# Sub-account internal transfer
+# wallet_type: 1=Fund Account, 2=Standard Futures, 3=Perpetual Futures, 15=Spot Account
+# user_account_type: 1=UID, 2=Phone number, 3=Email
 transfer = client.sub_account().sub_account_internal_transfer(
-    coin="USDT", wallet_type="SPOT", amount=100.0,
-    transfer_type="FROM_MAIN_TO_SUB", to_sub_uid="12345678"
+    coin="USDT",
+    wallet_type=15,  # Spot Account
+    amount=100.0,
+    user_account_type=1,  # UID
+    user_account="12345678",
+    calling_code=None,  # Required when user_account_type=2
+    transfer_client_id="transfer-001",  # Optional custom ID
+    recv_window=None
+)
+
+# Sub-Mother Account Asset Transfer (master account only)
+# Flexible transfer between parent and sub-accounts
+transfer = client.sub_account().sub_mother_account_asset_transfer(
+    asset_name="USDT",
+    transfer_amount=100.0,
+    from_uid=123456,
+    from_type=1,  # 1=Parent account, 2=Sub-account
+    from_account_type=1,  # 1=Funding, 2=Standard futures, 3=Perpetual, 15=Spot
+    to_uid=789012,
+    to_type=2,  # 1=Parent account, 2=Sub-account
+    to_account_type=15,  # Spot account
+    remark="Transfer to sub-account",
+    recv_window=None
+)
+
+# Query transferable amount (master account only)
+transferable = client.sub_account().get_sub_mother_account_transferable_amount(
+    from_uid=123456,
+    from_account_type=1,  # Funding
+    to_uid=789012,
+    to_account_type=15,  # Spot
+    recv_window=None
+)
+
+# Query transfer history (master account only)
+import time
+history = client.sub_account().get_sub_mother_account_transfer_history(
+    uid=123456,
+    type_=None,  # Optional filter
+    tran_id=None,  # Optional filter
+    start_time=int(time.time() - 7*24*3600) * 1000,
+    end_time=int(time.time()) * 1000,
+    page_id=1,
+    paging_size=50,
+    recv_window=None
 )
 
 records = client.sub_account().get_sub_account_internal_transfer_records()
