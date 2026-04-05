@@ -12,18 +12,22 @@
 </div>
 
 Python client for the [BingX](https://bingx.com) cryptocurrency exchange API. USDT-M and Coin-M perpetual futures, spot
-trading, copy trading, sub-accounts, WebSocket streaming. 170+ methods.
+trading, copy trading, sub-accounts, WebSocket streaming. **Now with API v3 support**: TWAP orders, multi-assets margin, position risk monitoring. 190+ methods.
 
 > Also available: **[PHP SDK](https://github.com/tigusigalpa/bingx-php)** · **[Go SDK](https://github.com/tigusigalpa/bingx-go)** · **[PyPI](https://pypi.org/project/bingx-python/)**
 
 > 📖 **[Full documentation available on Wiki](https://github.com/tigusigalpa/bingx-python/wiki)**
+>
+> 🚀 **[API v3 Migration Guide](API_V3_MIGRATION.md)** · **[v3 Examples](examples/api_v3_examples.py)** · **[Update Summary](API_V3_UPDATE_SUMMARY.md)**
 
 ## Table of Contents
 
 - [Features](#features)
+- [What's New in API v3](#whats-new-in-api-v3)
 - [Quick Start](#quick-start)
 - [Installation](#installation)
 - [Usage](#usage)
+    - [TWAP Service](#twap-service---algorithmic-execution-api-v3)
     - [Market Service](#market-service---market-data)
     - [Account Service](#account-service---account-management)
     - [Trade Service](#trade-service---trading-operations)
@@ -47,9 +51,10 @@ trading, copy trading, sub-accounts, WebSocket streaming. 170+ methods.
 | Service                      | Description                                         | Methods |
 |------------------------------|-----------------------------------------------------|---------|
 | **USDT-M Perpetual Futures** |                                                     |         |
-| **Market Service**           | Market data, Quote API, symbols, prices, candles    | 40      |
-| **Account Service**          | Balance, positions, leverage, margin, assets        | 25      |
-| **Trade Service**            | Orders, trade history, position management          | 30      |
+| **TWAP Service** 🆕          | Time-weighted average price algorithmic execution   | 7       |
+| **Market Service**           | Market data, Quote API, symbols, prices, candles    | 44      |
+| **Account Service**          | Balance, positions, leverage, margin, risk tracking | 28      |
+| **Trade Service**            | Orders, multi-assets margin, auto-add margin        | 37      |
 | **Wallet Service**           | Deposits, withdrawals, wallet addresses             | 5       |
 | **Spot Account Service**     | Spot balance, transfers, internal transfers         | 7       |
 | **Sub-Account Service**      | Sub-account management, API keys, transfers         | 20      |
@@ -68,11 +73,124 @@ trading, copy trading, sub-accounts, WebSocket streaming. 170+ methods.
 - base64 and hex signature encoding
 - recvWindow for replay attack protection
 
+### API v3 Features 🆕
+
+- **TWAP Orders** — Execute large orders without moving the market
+- **Multi-Assets Margin** — Use entire portfolio as collateral
+- **Position Risk Monitoring** — Real-time liquidation risk tracking
+- **Income Tracking** — Detailed P&L, fees, and funding history
+- **Auto-Add Margin** — Automatic margin addition to prevent liquidation
+- **One-Click Reverse** — Atomically reverse position direction
+- **Enhanced Market Data** — Open interest, funding rates, index prices
+- **Advanced Order Types** — Trailing stops, trigger limits
+
 ### Other
 
 - Type hints throughout
 - WebSocket streams (market data, account data)
 - Custom exceptions per error type
+- **100% backward compatible** — All existing code works unchanged
+
+---
+
+## What's New in API v3
+
+### 🎯 TWAP Orders - Trade Like Institutions
+
+Execute large orders without moving the market. TWAP breaks your trade into smaller pieces over time.
+
+```python
+# Execute 10 BTC over 1 hour
+twap = client.twap().buy(
+    symbol="BTC-USDT",
+    quantity=10.0,
+    duration=3600,
+    position_side="LONG"
+)
+
+# Monitor progress
+details = client.twap().get_order_detail(twap['orderId'])
+print(f"Progress: {details['executedQty']}/{details['totalQty']}")
+```
+
+### 📊 Position Risk Monitoring
+
+Know your liquidation risk in real-time:
+
+```python
+risk = client.account().get_position_risk("BTC-USDT")
+print(f"Liquidation Price: {risk['liquidationPrice']}")
+print(f"Margin Ratio: {risk['marginRatio']}%")
+
+# Track all income
+income = client.account().get_income_history(
+    symbol="BTC-USDT",
+    income_type="REALIZED_PNL"
+)
+```
+
+### 💰 Multi-Assets Margin
+
+Use your entire portfolio as collateral:
+
+```python
+# Enable portfolio margin
+client.trade().switch_multi_assets_mode(True)
+
+# Check margin status
+margin = client.trade().get_multi_assets_margin()
+print(f"Total Collateral: {margin['totalCollateral']}")
+print(f"Available Margin: {margin['availableMargin']}")
+```
+
+### 🛡️ Auto-Add Margin
+
+Prevent liquidation automatically:
+
+```python
+client.trade().set_auto_add_margin(
+    symbol="BTC-USDT",
+    position_side="LONG",
+    enabled=True
+)
+```
+
+### 🔄 One-Click Position Reversal
+
+Instantly reverse your position:
+
+```python
+# LONG → SHORT in one atomic operation
+client.trade().one_click_reverse_position("BTC-USDT")
+```
+
+### 📈 Enhanced Market Data
+
+```python
+# Open interest tracking
+oi = client.market().get_open_interest("BTC-USDT")
+
+# Funding rate info
+funding = client.market().get_funding_rate_info("BTC-USDT")
+print(f"Rate: {funding['fundingRate']}")
+```
+
+### 🎯 Advanced Order Types
+
+```python
+# Trailing stop that locks in profits
+order = client.trade().create_order({
+    "symbol": "BTC-USDT",
+    "side": "SELL",
+    "positionSide": "LONG",
+    "type": "TRAILING_STOP_MARKET",
+    "quantity": 1.0,
+    "activationPrice": 50000,
+    "callbackRate": 2.0  # Trail 2% behind peak
+})
+```
+
+**📚 Full Guide**: See [API_V3_MIGRATION.md](API_V3_MIGRATION.md) for complete documentation and examples.
 
 ---
 
@@ -134,6 +252,67 @@ pip install -e .
 ---
 
 ## Usage
+
+### TWAP Service - Algorithmic Execution (API v3)
+
+Execute large orders without moving the market by breaking them into smaller pieces over time.
+
+#### Create TWAP Orders
+
+```python
+# Buy order - execute 10 BTC over 1 hour
+twap_buy = client.twap().buy(
+    symbol="BTC-USDT",
+    quantity=10.0,
+    duration=3600,  # seconds
+    position_side="LONG"
+)
+
+# Sell order with price limit
+twap_sell = client.twap().sell(
+    symbol="BTC-USDT",
+    quantity=5.0,
+    duration=1800,  # 30 minutes
+    position_side="SHORT",
+    price_limit=60000  # Won't execute below this price
+)
+```
+
+#### Monitor TWAP Execution
+
+```python
+# Get order details and progress
+details = client.twap().get_order_detail(twap_buy['orderId'])
+
+executed = float(details['executedQty'])
+total = float(details['totalQty'])
+progress = (executed / total) * 100
+
+print(f"Status: {details['status']}")
+print(f"Progress: {progress:.2f}%")
+print(f"Average Price: {details['avgPrice']}")
+
+# Get all open TWAP orders
+open_orders = client.twap().get_open_orders("BTC-USDT")
+
+# Get TWAP order history
+history = client.twap().get_order_history(
+    symbol="BTC-USDT",
+    limit=50
+)
+```
+
+#### Cancel TWAP Orders
+
+```python
+# Cancel specific order
+client.twap().cancel_order(twap_buy['orderId'])
+
+# Cancel all TWAP orders for a symbol
+client.twap().cancel_all_orders("BTC-USDT")
+```
+
+---
 
 ### Market Service - Market Data
 
@@ -227,6 +406,30 @@ klines_v3 = client.market().get_klines_v3("BTC-USDT", "1h", 500)
 rules = client.market().get_trading_rules("BTC-USDT")
 ```
 
+#### Enhanced Market Data (API v3)
+
+```python
+# Open Interest - track total open positions
+oi = client.market().get_open_interest("BTC-USDT")
+print(f"Open Interest: {oi['openInterest']}")
+
+# Open Interest History with different periods
+oi_history = client.market().get_open_interest_history(
+    symbol="BTC-USDT",
+    period="5m",  # 5m, 15m, 30m, 1h, 4h, 1d
+    limit=100
+)
+
+# Funding Rate Info - current rate and next payment time
+funding = client.market().get_funding_rate_info("BTC-USDT")
+print(f"Current Rate: {funding['fundingRate']}")
+print(f"Next Payment: {funding['fundingTime']}")
+
+# Index Price
+index = client.market().get_index_price("BTC-USDT")
+print(f"Index Price: {index['indexPrice']}")
+```
+
 ---
 
 ### Account Service - Account Management
@@ -258,6 +461,69 @@ client.account().set_position_margin("BTC-USDT", "LONG", 100.0, 1)
 fees = client.account().get_trading_fees("BTC-USDT")
 permissions = client.account().get_account_permissions()
 rate_limits = client.account().get_api_rate_limits()
+```
+
+#### Position Risk Monitoring (API v3)
+
+```python
+# Get detailed position risk
+risk = client.account().get_position_risk("BTC-USDT")
+
+print(f"Position Size: {risk['positionAmt']}")
+print(f"Entry Price: {risk['entryPrice']}")
+print(f"Mark Price: {risk['markPrice']}")
+print(f"Liquidation Price: {risk['liquidationPrice']}")
+print(f"Margin Ratio: {risk['marginRatio']}%")
+print(f"Unrealized P&L: {risk['unrealizedProfit']}")
+
+# Get all positions risk
+all_risk = client.account().get_position_risk()
+```
+
+#### Income & Commission Tracking (API v3)
+
+```python
+# Get all income history
+income = client.account().get_income_history(
+    symbol="BTC-USDT",
+    limit=100
+)
+
+# Filter by income type
+pnl = client.account().get_income_history(
+    symbol="BTC-USDT",
+    income_type="REALIZED_PNL"  # Actual profits/losses
+)
+
+funding = client.account().get_income_history(
+    symbol="BTC-USDT",
+    income_type="FUNDING_FEE"  # 8-hour funding payments
+)
+
+# Get commission history
+fees = client.account().get_commission_history(
+    symbol="BTC-USDT",
+    limit=100
+)
+
+# Calculate total P&L
+stats = {
+    'total_pnl': 0,
+    'total_fees': 0,
+    'total_funding': 0,
+}
+
+for record in income:
+    if record['incomeType'] == 'REALIZED_PNL':
+        stats['total_pnl'] += float(record['income'])
+    elif record['incomeType'] == 'COMMISSION':
+        stats['total_fees'] += float(record['income'])
+    elif record['incomeType'] == 'FUNDING_FEE':
+        stats['total_funding'] += float(record['income'])
+
+print(f"Net P&L: ${stats['total_pnl']:.2f}")
+print(f"Fees Paid: ${abs(stats['total_fees']):.2f}")
+print(f"Funding: ${stats['total_funding']:.2f}")
 ```
 
 ---
@@ -331,6 +597,105 @@ mode = client.trade().get_position_mode()
 client.trade().set_position_mode("HEDGE_MODE")
 client.trade().close_all_positions("BTC-USDT")
 client.trade().change_margin_type("BTC-USDT", "ISOLATED")
+```
+
+#### Multi-Assets Margin (API v3)
+
+```python
+# Enable multi-assets margin mode
+client.trade().switch_multi_assets_mode(True)
+
+# Check status
+mode = client.trade().get_multi_assets_mode()
+print(f"Multi-assets: {'ON' if mode['multiAssetsMargin'] else 'OFF'}")
+
+# Get margin info
+margin = client.trade().get_multi_assets_margin()
+print(f"Total Collateral: {margin['totalCollateral']}")
+print(f"Total Margin Used: {margin['totalMargin']}")
+print(f"Available Margin: {margin['availableMargin']}")
+print(f"Margin Ratio: {margin['marginRatio']}%")
+
+# Asset breakdown
+for asset in margin['assets']:
+    print(f"{asset['asset']}: Balance={asset['walletBalance']}, "
+          f"Collateral={asset['crossMarginAsset']}")
+
+# Get multi-assets rules (haircuts, supported assets)
+rules = client.trade().get_multi_assets_rules()
+
+# Disable multi-assets mode (only when no positions)
+client.trade().switch_multi_assets_mode(False)
+```
+
+#### Auto-Add Margin (API v3)
+
+```python
+# Enable auto-add margin for LONG positions
+client.trade().set_auto_add_margin(
+    symbol="BTC-USDT",
+    position_side="LONG",
+    enabled=True
+)
+
+# Check status
+status = client.trade().get_auto_add_margin("BTC-USDT", "LONG")
+if status['autoAddMargin']:
+    print("✅ Auto-add margin is ON")
+
+# Disable auto-add margin
+client.trade().set_auto_add_margin(
+    symbol="BTC-USDT",
+    position_side="LONG",
+    enabled=False
+)
+```
+
+#### One-Click Position Reversal (API v3)
+
+```python
+# Currently LONG 1.0 BTC
+# This closes the long AND opens SHORT 1.0 BTC atomically
+result = client.trade().one_click_reverse_position("BTC-USDT")
+# Now you're SHORT 1.0 BTC - no gap, no slippage
+```
+
+#### Advanced Order Types (API v3)
+
+```python
+# Trailing Stop Market Order
+trailing_stop = client.trade().create_order({
+    "symbol": "BTC-USDT",
+    "side": "SELL",
+    "positionSide": "LONG",
+    "type": "TRAILING_STOP_MARKET",
+    "quantity": 1.0,
+    "activationPrice": 50000,  # Start trailing at $50k
+    "callbackRate": 2.0  # Trail 2% behind peak
+})
+
+# Trigger Limit Order
+trigger_limit = client.trade().create_order({
+    "symbol": "BTC-USDT",
+    "side": "BUY",
+    "positionSide": "LONG",
+    "type": "TRIGGER_LIMIT",
+    "quantity": 1.0,
+    "stopPrice": 48000,  # Trigger when price hits $48k
+    "price": 48100  # Execute limit order at $48.1k
+})
+
+# Trailing Take Profit / Stop Loss
+trailing_tp_sl = client.trade().create_order({
+    "symbol": "BTC-USDT",
+    "side": "SELL",
+    "positionSide": "LONG",
+    "type": "TRAILING_TP_SL",
+    "quantity": 1.0,
+    "takeProfitPrice": 55000,
+    "stopLossPrice": 48000,
+    "trailingStopPercent": 1.5
+})
 ```
 
 ---
