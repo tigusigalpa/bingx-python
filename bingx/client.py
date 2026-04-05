@@ -16,6 +16,7 @@ from .services import (
     SpotAccountService,
     SubAccountService,
     TradeService,
+    TWAPService,
     WalletService,
 )
 from .coinm_client import CoinMClient
@@ -62,6 +63,7 @@ class BingXClient:
         self._spot_account = SpotAccountService(self.http_client)
         self._sub_account = SubAccountService(self.http_client)
         self._copy_trading = CopyTradingService(self.http_client)
+        self._twap = TWAPService(self.http_client)
         self._coinm_client: Optional[CoinMClient] = None
 
     def market(self) -> MarketService:
@@ -99,6 +101,10 @@ class BingXClient:
     def copy_trading(self) -> CopyTradingService:
         """Get Copy Trading Service for copy trading operations"""
         return self._copy_trading
+
+    def twap(self) -> TWAPService:
+        """Get TWAP Service for time-weighted average price orders (API v3)"""
+        return self._twap
 
     def coinm(self) -> CoinMClient:
         """

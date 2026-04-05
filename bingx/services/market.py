@@ -397,3 +397,67 @@ class MarketService:
             symbol: Trading symbol
         """
         return self.client.request("GET", "/openApi/swap/v2/quote/tradingRules", {"symbol": symbol})
+
+    def get_open_interest(self, symbol: str) -> Dict[str, Any]:
+        """
+        Get current open interest (API v3)
+
+        Args:
+            symbol: Trading symbol
+
+        Returns:
+            Open interest data including total open positions
+        """
+        return self.client.request("GET", "/openApi/swap/v2/quote/openInterest", {"symbol": symbol})
+
+    def get_open_interest_history(
+        self,
+        symbol: str,
+        period: str = "5m",
+        limit: int = 100,
+        start_time: Optional[int] = None,
+        end_time: Optional[int] = None,
+    ) -> Dict[str, Any]:
+        """
+        Get historical open interest data (API v3)
+
+        Args:
+            symbol: Trading symbol
+            period: Time period (5m, 15m, 30m, 1h, 4h, 1d)
+            limit: Number of records to return
+            start_time: Start time in milliseconds
+            end_time: End time in milliseconds
+
+        Returns:
+            Historical open interest data
+        """
+        params = {"symbol": symbol, "period": period, "limit": limit}
+        if start_time:
+            params["startTime"] = start_time
+        if end_time:
+            params["endTime"] = end_time
+        return self.client.request("GET", "/openApi/swap/v2/quote/openInterestHistory", params)
+
+    def get_funding_rate_info(self, symbol: str) -> Dict[str, Any]:
+        """
+        Get current funding rate information (API v3)
+
+        Args:
+            symbol: Trading symbol
+
+        Returns:
+            Current funding rate, next funding time, and related info
+        """
+        return self.client.request("GET", "/openApi/swap/v2/quote/fundingRate", {"symbol": symbol})
+
+    def get_index_price(self, symbol: str) -> Dict[str, Any]:
+        """
+        Get index price (API v3)
+
+        Args:
+            symbol: Trading symbol
+
+        Returns:
+            Index price data
+        """
+        return self.client.request("GET", "/openApi/swap/v2/quote/indexPrice", {"symbol": symbol})

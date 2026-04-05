@@ -5,7 +5,56 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased] - 2026-03-15
+## [Unreleased] - 2026-04-05
+
+### Added - API v3 Support
+
+#### New TWAP Service
+- **TWAPService**: Time-Weighted Average Price order execution for minimizing market impact
+  - `buy()` - Create TWAP buy order with duration and optional price limit
+  - `sell()` - Create TWAP sell order with duration and optional price limit
+  - `get_order_detail()` - Get TWAP order execution progress and details
+  - `get_open_orders()` - Get all open TWAP orders
+  - `get_order_history()` - Get historical TWAP orders
+  - `cancel_order()` - Cancel a TWAP order
+  - `cancel_all_orders()` - Cancel all TWAP orders for a symbol
+
+#### Market Service - API v3 Endpoints
+- `get_open_interest()` - Get current open interest for a symbol
+- `get_open_interest_history()` - Get historical open interest data with configurable periods (5m, 15m, 30m, 1h, 4h, 1d)
+- `get_funding_rate_info()` - Get current funding rate and next funding time
+- `get_index_price()` - Get index price for a symbol
+
+#### Account Service - API v3 Endpoints
+- `get_position_risk()` - Get detailed position risk metrics including:
+  - Liquidation price
+  - Margin ratio
+  - Unrealized P&L
+  - Entry price and mark price
+- `get_income_history()` - Get income history with filtering by type:
+  - REALIZED_PNL - Actual profits/losses from closed trades
+  - FUNDING_FEE - 8-hour funding payments
+  - COMMISSION - Trading fees
+  - TRANSFER - Account transfers
+  - INSURANCE_CLEAR - Insurance fund settlements
+- `get_commission_history()` - Get detailed commission history
+
+#### Trade Service - API v3 Features
+- **Multi-Assets Margin Mode**:
+  - `switch_multi_assets_mode()` - Enable/disable portfolio-wide margin
+  - `get_multi_assets_mode()` - Get current multi-assets margin status
+  - `get_multi_assets_margin()` - Get margin info including total collateral, margin used, available margin
+  - `get_multi_assets_rules()` - Get supported assets and haircut rates
+- **Auto-Add Margin**:
+  - `set_auto_add_margin()` - Enable/disable automatic margin addition to prevent liquidation
+  - `get_auto_add_margin()` - Get auto-add margin status
+- **Position Management**:
+  - `one_click_reverse_position()` - Atomically reverse position (LONG → SHORT or SHORT → LONG)
+
+#### New Order Types Support
+- `TRAILING_STOP_MARKET` - Stop-loss that follows price to lock in profits
+- `TRIGGER_LIMIT` - Conditional limit order triggered at specific price
+- `TRAILING_TP_SL` - Trailing take profit and stop loss
 
 ### Added
 

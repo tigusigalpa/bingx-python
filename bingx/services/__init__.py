@@ -9,6 +9,7 @@ from .contract import ContractService
 from .listen_key import ListenKeyService
 from .sub_account import SubAccountService
 from .copy_trading import CopyTradingService
+from .twap import TWAPService
 
 __all__ = [
     "MarketService",
@@ -20,4 +21,5 @@ __all__ = [
     "ListenKeyService",
     "SubAccountService",
     "CopyTradingService",
+    "TWAPService",
 ]

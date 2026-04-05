@@ -413,3 +413,111 @@ class TradeService:
             "/openApi/swap/v2/trade/marginType",
             {"symbol": symbol, "marginType": margin_type},
         )
+
+    def switch_multi_assets_mode(self, enabled: bool) -> Dict[str, Any]:
+        """
+        Switch multi-assets margin mode (API v3)
+
+        Args:
+            enabled: True to enable, False to disable
+
+        Returns:
+            Response confirming mode change
+
+        Note:
+            Can only switch when no open positions exist
+        """
+        return self.client.request(
+            "POST",
+            "/openApi/swap/v2/trade/multiAssetsMargin",
+            {"multiAssetsMargin": enabled},
+        )
+
+    def get_multi_assets_mode(self) -> Dict[str, Any]:
+        """
+        Get multi-assets margin mode status (API v3)
+
+        Returns:
+            Current multi-assets margin mode status
+        """
+        return self.client.request("GET", "/openApi/swap/v2/trade/multiAssetsMargin")
+
+    def get_multi_assets_margin(self) -> Dict[str, Any]:
+        """
+        Get multi-assets margin information (API v3)
+
+        Returns:
+            Total collateral, margin used, available margin, margin ratio, and asset breakdown
+        """
+        return self.client.request("GET", "/openApi/swap/v2/user/multiAssetsMargin")
+
+    def get_multi_assets_rules(self) -> Dict[str, Any]:
+        """
+        Get multi-assets margin rules (API v3)
+
+        Returns:
+            Supported assets, haircut rates, and collateral rules
+        """
+        return self.client.request("GET", "/openApi/swap/v2/trade/multiAssetsRules")
+
+    def set_auto_add_margin(
+        self, symbol: str, position_side: str, enabled: bool
+    ) -> Dict[str, Any]:
+        """
+        Set auto-add margin for a position (API v3)
+
+        Args:
+            symbol: Trading symbol
+            position_side: Position side (LONG, SHORT)
+            enabled: True to enable, False to disable
+
+        Returns:
+            Response confirming auto-add margin status
+
+        Note:
+            Only works in hedge mode. Uses available balance to prevent liquidation.
+        """
+        return self.client.request(
+            "POST",
+            "/openApi/swap/v2/trade/autoAddMargin",
+            {"symbol": symbol, "positionSide": position_side, "autoAddMargin": enabled},
+        )
+
+    def get_auto_add_margin(self, symbol: str, position_side: str) -> Dict[str, Any]:
+        """
+        Get auto-add margin status (API v3)
+
+        Args:
+            symbol: Trading symbol
+            position_side: Position side (LONG, SHORT)
+
+        Returns:
+            Auto-add margin status
+        """
+        return self.client.request(
+            "GET",
+            "/openApi/swap/v2/trade/autoAddMargin",
+            {"symbol": symbol, "positionSide": position_side},
+        )
+
+    def one_click_reverse_position(self, symbol: str) -> Dict[str, Any]:
+        """
+        One-click reverse position (API v3)
+
+        Atomically closes current position and opens opposite position with same size.
+        For example: LONG 1.0 BTC -> SHORT 1.0 BTC in one operation.
+
+        Args:
+            symbol: Trading symbol
+
+        Returns:
+            Response with new position details
+
+        Note:
+            No gap, no slippage between close and open
+        """
+        return self.client.request(
+            "POST",
+            "/openApi/swap/v2/trade/oneClickReverse",
+            {"symbol": symbol},
+        )

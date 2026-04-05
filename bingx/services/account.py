@@ -213,3 +213,78 @@ class AccountService:
             assets: List of asset names to convert
         """
         return self.client.request("POST", "/openApi/swap/v2/user/dustTransfer", {"assets": assets})
+
+    def get_position_risk(self, symbol: Optional[str] = None) -> Dict[str, Any]:
+        """
+        Get position risk information (API v3)
+
+        Args:
+            symbol: Trading symbol (optional, returns all if not specified)
+
+        Returns:
+            Position risk data including liquidation price, margin ratio, unrealized P&L
+        """
+        params = {}
+        if symbol:
+            params["symbol"] = symbol
+        return self.client.request("GET", "/openApi/swap/v2/user/positionRisk", params)
+
+    def get_income_history(
+        self,
+        symbol: Optional[str] = None,
+        income_type: Optional[str] = None,
+        start_time: Optional[int] = None,
+        end_time: Optional[int] = None,
+        limit: int = 100,
+    ) -> Dict[str, Any]:
+        """
+        Get income history (API v3)
+
+        Args:
+            symbol: Trading symbol (optional)
+            income_type: Income type (REALIZED_PNL, FUNDING_FEE, COMMISSION, TRANSFER, INSURANCE_CLEAR)
+            start_time: Start time in milliseconds
+            end_time: End time in milliseconds
+            limit: Number of records to return
+
+        Returns:
+            Income history records
+        """
+        params = {"limit": limit}
+        if symbol:
+            params["symbol"] = symbol
+        if income_type:
+            params["incomeType"] = income_type
+        if start_time:
+            params["startTime"] = start_time
+        if end_time:
+            params["endTime"] = end_time
+        return self.client.request("GET", "/openApi/swap/v2/user/income", params)
+
+    def get_commission_history(
+        self,
+        symbol: Optional[str] = None,
+        start_time: Optional[int] = None,
+        end_time: Optional[int] = None,
+        limit: int = 100,
+    ) -> Dict[str, Any]:
+        """
+        Get commission history (API v3)
+
+        Args:
+            symbol: Trading symbol (optional)
+            start_time: Start time in milliseconds
+            end_time: End time in milliseconds
+            limit: Number of records to return
+
+        Returns:
+            Commission history records
+        """
+        params = {"limit": limit}
+        if symbol:
+            params["symbol"] = symbol
+        if start_time:
+            params["startTime"] = start_time
+        if end_time:
+            params["endTime"] = end_time
+        return self.client.request("GET", "/openApi/swap/v2/user/commissionHistory", params)
