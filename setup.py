@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="bingx-python",
-    version="1.0.0",
+    version="2.0.5",
     author="Igor Sazonov",
     author_email="sovletig@gmail.com",
     description="BingX API client for Python - USDT-M and Coin-M perpetual futures, spot trading, copy trading, WebSocket streaming",
