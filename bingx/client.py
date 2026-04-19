@@ -9,6 +9,8 @@ from typing import Optional
 from .http.base_client import BaseHTTPClient
 from .services import (
     AccountService,
+    AgentService,
+    AnnouncementService,
     ContractService,
     CopyTradingService,
     ListenKeyService,
@@ -64,6 +66,8 @@ class BingXClient:
         self._sub_account = SubAccountService(self.http_client)
         self._copy_trading = CopyTradingService(self.http_client)
         self._twap = TWAPService(self.http_client)
+        self._agent = AgentService(self.http_client)
+        self._announcement = AnnouncementService(self.http_client)
         self._coinm_client: Optional[CoinMClient] = None
 
     def market(self) -> MarketService:
@@ -105,6 +109,14 @@ class BingXClient:
     def twap(self) -> TWAPService:
         """Get TWAP Service for time-weighted average price orders (API v3)"""
         return self._twap
+
+    def agent(self) -> AgentService:
+        """Get Agent Service for affiliate/broker operations"""
+        return self._agent
+
+    def announcement(self) -> AnnouncementService:
+        """Get Announcement Service for public announcements"""
+        return self._announcement
 
     def coinm(self) -> CoinMClient:
         """

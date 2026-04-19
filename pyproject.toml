@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "bingx-python"
-version = "2.0.5"
+version = "2.0.0"
 description = "BingX API client for Python - USDT-M and Coin-M perpetual futures, spot trading, copy trading, WebSocket streaming"
 readme = "README.md"
 authors = [{name = "Igor Sazonov", email = "sovletig@gmail.com"}]

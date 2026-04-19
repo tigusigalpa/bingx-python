@@ -70,7 +70,7 @@ class MarketService:
             symbol: Trading symbol
             limit: Number of depth levels (5, 10, 20)
         """
-        return self.client.request("GET", "/openApi/swap/v2/market/depth", {"symbol": symbol, "limit": limit})
+        return self.client.request("GET", "/openApi/swap/v2/quote/depth", {"symbol": symbol, "limit": limit})
 
     def get_spot_depth(self, symbol: str, limit: int = 20) -> Dict[str, Any]:
         """
@@ -91,7 +91,7 @@ class MarketService:
         end_time: Optional[int] = None,
     ) -> Dict[str, Any]:
         """
-        Get candlestick data for futures
+        Get candlestick data for futures (v3 API)
 
         Args:
             symbol: Trading symbol
@@ -105,7 +105,7 @@ class MarketService:
             params["startTime"] = start_time
         if end_time:
             params["endTime"] = end_time
-        return self.client.request("GET", "/openApi/swap/v2/market/klines", params)
+        return self.client.request("GET", "/openApi/swap/v3/quote/klines", params)
 
     def get_spot_klines(
         self,
@@ -146,7 +146,7 @@ class MarketService:
         params = {}
         if symbol:
             params["symbol"] = symbol
-        return self.client.request("GET", "/openApi/swap/v2/market/ticker", params)
+        return self.client.request("GET", "/openApi/swap/v2/quote/ticker", params)
 
     def get_spot_24hr_ticker(self, symbol: Optional[str] = None) -> Dict[str, Any]:
         """
@@ -170,14 +170,17 @@ class MarketService:
         """
         return self.client.request("GET", "/openApi/swap/v2/market/fundingRate", {"symbol": symbol, "limit": limit})
 
-    def get_mark_price(self, symbol: str) -> Dict[str, Any]:
+    def get_mark_price(self, symbol: Optional[str] = None) -> Dict[str, Any]:
         """
-        Get mark price
+        Get mark price and premium index
 
         Args:
-            symbol: Trading symbol
+            symbol: Trading symbol (optional, returns all if not specified)
         """
-        return self.client.request("GET", "/openApi/swap/v2/market/markPrice", {"symbol": symbol})
+        params = {}
+        if symbol:
+            params["symbol"] = symbol
+        return self.client.request("GET", "/openApi/swap/v2/quote/premiumIndex", params)
 
     def get_premium_index_klines(
         self, symbol: str, interval: str, limit: int = 500
@@ -231,7 +234,7 @@ class MarketService:
             symbol: Trading symbol
             limit: Number of trades
         """
-        return self.client.request("GET", "/openApi/swap/v2/market/trades", {"symbol": symbol, "limit": limit})
+        return self.client.request("GET", "/openApi/swap/v2/quote/trades", {"symbol": symbol, "limit": limit})
 
     def get_spot_aggregate_trades(self, symbol: str, limit: int = 500) -> Dict[str, Any]:
         """
@@ -337,14 +340,17 @@ class MarketService:
         """
         return self.client.request("GET", "/openApi/swap/v2/quote/ticker", {"symbol": symbol})
 
-    def get_quote_funding_rate(self, symbol: str) -> Dict[str, Any]:
+    def get_quote_funding_rate(self, symbol: Optional[str] = None) -> Dict[str, Any]:
         """
         Get funding rate via Quote API
 
         Args:
-            symbol: Trading symbol
+            symbol: Trading symbol (optional, returns all if not specified)
         """
-        return self.client.request("GET", "/openApi/swap/v2/quote/fundingRate", {"symbol": symbol})
+        params = {}
+        if symbol:
+            params["symbol"] = symbol
+        return self.client.request("GET", "/openApi/swap/v2/quote/fundingRate", params)
 
     def get_quote_open_interest(self, symbol: str) -> Dict[str, Any]:
         """
@@ -438,17 +444,20 @@ class MarketService:
             params["endTime"] = end_time
         return self.client.request("GET", "/openApi/swap/v2/quote/openInterestHistory", params)
 
-    def get_funding_rate_info(self, symbol: str) -> Dict[str, Any]:
+    def get_funding_rate_info(self, symbol: Optional[str] = None) -> Dict[str, Any]:
         """
         Get current funding rate information (API v3)
 
         Args:
-            symbol: Trading symbol
+            symbol: Trading symbol (optional, returns all if not specified)
 
         Returns:
             Current funding rate, next funding time, and related info
         """
-        return self.client.request("GET", "/openApi/swap/v2/quote/fundingRate", {"symbol": symbol})
+        params = {}
+        if symbol:
+            params["symbol"] = symbol
+        return self.client.request("GET", "/openApi/swap/v2/quote/fundingRate", params)
 
     def get_index_price(self, symbol: str) -> Dict[str, Any]:
         """

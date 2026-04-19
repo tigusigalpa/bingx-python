@@ -90,5 +90,50 @@ class CoinMMarketService:
             symbol: Trading symbol
         """
         return self.client.request(
-            "GET", "/openApi/cswap/v1/market/fundingRate", {"symbol": symbol}
+            "GET", "/openApi/cswap/v1/market/premiumIndex", {"symbol": symbol}
+        )
+
+    def get_mark_price(self, symbol: str) -> Dict[str, Any]:
+        """
+        Get mark price for Coin-M contract
+
+        Args:
+            symbol: Trading symbol
+        """
+        return self.client.request(
+            "GET", "/openApi/cswap/v1/market/premiumIndex", {"symbol": symbol}
+        )
+
+    def get_recent_trades(self, symbol: str, limit: int = 100) -> Dict[str, Any]:
+        """
+        Get recent trades for Coin-M contract
+
+        Args:
+            symbol: Trading symbol
+            limit: Number of trades
+        """
+        return self.client.request(
+            "GET", "/openApi/cswap/v1/market/trades", {"symbol": symbol, "limit": limit}
+        )
+
+    def get_latest_price(self, symbol: str) -> Dict[str, Any]:
+        """
+        Get latest price for Coin-M contract
+
+        Args:
+            symbol: Trading symbol
+        """
+        return self.client.request(
+            "GET", "/openApi/cswap/v1/market/ticker", {"symbol": symbol}
+        )
+
+    def get_book_ticker(self, symbol: str) -> Dict[str, Any]:
+        """
+        Get best bid/ask for Coin-M contract
+
+        Args:
+            symbol: Trading symbol
+        """
+        return self.client.request(
+            "GET", "/openApi/cswap/v1/market/bookTicker", {"symbol": symbol}
         )

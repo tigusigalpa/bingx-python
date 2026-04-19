@@ -21,17 +21,24 @@ class SubAccountService:
         """
         self.client = client
 
-    def create_sub_account(self, sub_account_string: str) -> Dict[str, Any]:
+    def create_sub_account(
+        self, sub_account_string: str, note: Optional[str] = None
+    ) -> Dict[str, Any]:
         """
         Create a new sub-account
 
         Args:
             sub_account_string: Sub-account identifier
+            note: Optional note for the sub-account
         """
+        params = {"subAccountString": sub_account_string}
+        if note:
+            params["note"] = note
         return self.client.request(
             "POST",
             "/openApi/api/v3/sub-account/create",
-            {"subAccountString": sub_account_string},
+            params,
+            body_type="json",
         )
 
     def get_account_uid(self) -> Dict[str, Any]:
@@ -66,18 +73,19 @@ class SubAccountService:
         """
         return self.client.request("GET", "/openApi/api/v3/sub-account/assets", {"subUid": sub_uid})
 
-    def update_sub_account_status(self, sub_account_string: str, status: int) -> Dict[str, Any]:
+    def update_sub_account_status(self, sub_uid: str, freeze: bool) -> Dict[str, Any]:
         """
-        Update sub-account status
+        Update sub-account status (freeze/unfreeze)
 
         Args:
-            sub_account_string: Sub-account identifier
-            status: Status (1: enable, 2: disable)
+            sub_uid: Sub-account UID
+            freeze: True to freeze, False to unfreeze
         """
         return self.client.request(
             "POST",
             "/openApi/api/v3/sub-account/status",
-            {"subAccountString": sub_account_string, "status": status},
+            {"subUid": sub_uid, "freeze": freeze},
+            body_type="json",
         )
 
     def get_all_sub_account_balances(self) -> Dict[str, Any]:
@@ -86,79 +94,83 @@ class SubAccountService:
 
     def create_sub_account_api_key(
         self,
-        sub_account_string: str,
-        label: str,
-        permissions: Dict[str, bool],
-        ip: Optional[str] = None,
+        sub_uid: str,
+        note: str,
+        permissions: List[str],
+        ip_addresses: Optional[List[str]] = None,
     ) -> Dict[str, Any]:
         """
         Create API key for sub-account
 
         Args:
-            sub_account_string: Sub-account identifier
-            label: API key label
-            permissions: Permissions dictionary (e.g., {'spot': True, 'futures': True})
-            ip: IP whitelist (optional)
+            sub_uid: Sub-account UID
+            note: API key note/label
+            permissions: List of permissions (e.g., ['readOnly', 'trade', 'withdraw'])
+            ip_addresses: List of IP addresses for whitelist (optional)
         """
-        params = {
-            "subAccountString": sub_account_string,
-            "label": label,
+        params: Dict[str, Any] = {
+            "subUid": sub_uid,
+            "note": note,
             "permissions": permissions,
         }
-        if ip:
-            params["ip"] = ip
-        return self.client.request("POST", "/openApi/api/v3/sub-account/apiKey", params)
+        if ip_addresses:
+            params["ipAddresses"] = ip_addresses
+        return self.client.request(
+            "POST", "/openApi/api/v3/sub-account/apiKey", params, body_type="json"
+        )
 
-    def query_api_key(self, sub_account_string: str) -> Dict[str, Any]:
+    def query_api_key(self, sub_uid: str) -> Dict[str, Any]:
         """
         Query API key information
 
         Args:
-            sub_account_string: Sub-account identifier
+            sub_uid: Sub-account UID
         """
         return self.client.request(
             "GET",
             "/openApi/api/v3/sub-account/apiKey",
-            {"subAccountString": sub_account_string},
+            {"subUid": sub_uid},
         )
 
     def edit_sub_account_api_key(
         self,
-        sub_account_string: str,
+        sub_uid: str,
         api_key: str,
-        permissions: Dict[str, bool],
-        ip: Optional[str] = None,
+        permissions: List[str],
+        ip_addresses: Optional[List[str]] = None,
     ) -> Dict[str, Any]:
         """
         Edit sub-account API key
 
         Args:
-            sub_account_string: Sub-account identifier
+            sub_uid: Sub-account UID
             api_key: API key to edit
-            permissions: New permissions
-            ip: New IP whitelist (optional)
+            permissions: List of permissions (e.g., ['readOnly', 'trade', 'withdraw'])
+            ip_addresses: List of IP addresses for whitelist (optional)
         """
-        params = {
-            "subAccountString": sub_account_string,
+        params: Dict[str, Any] = {
+            "subUid": sub_uid,
             "apiKey": api_key,
             "permissions": permissions,
         }
-        if ip:
-            params["ip"] = ip
-        return self.client.request("PUT", "/openApi/api/v3/sub-account/apiKey", params)
+        if ip_addresses:
+            params["ipAddresses"] = ip_addresses
+        return self.client.request(
+            "PUT", "/openApi/api/v3/sub-account/apiKey", params, body_type="json"
+        )
 
-    def delete_sub_account_api_key(self, sub_account_string: str, api_key: str) -> Dict[str, Any]:
+    def delete_sub_account_api_key(self, sub_uid: str, api_key: str) -> Dict[str, Any]:
         """
         Delete sub-account API key
 
         Args:
-            sub_account_string: Sub-account identifier
+            sub_uid: Sub-account UID
             api_key: API key to delete
         """
         return self.client.request(
             "DELETE",
             "/openApi/api/v3/sub-account/apiKey",
-            {"subAccountString": sub_account_string, "apiKey": api_key},
+            {"subUid": sub_uid, "apiKey": api_key},
         )
 
     def authorize_sub_account_internal_transfer(

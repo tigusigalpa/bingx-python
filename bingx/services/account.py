@@ -22,8 +22,8 @@ class AccountService:
         self.client = client
 
     def get_balance(self) -> Dict[str, Any]:
-        """Get account balance"""
-        return self.client.request("GET", "/openApi/swap/v2/user/balance")
+        """Get account balance (v3 API)"""
+        return self.client.request("GET", "/openApi/swap/v3/user/balance")
 
     def get_positions(self, symbol: Optional[str] = None) -> Dict[str, Any]:
         """

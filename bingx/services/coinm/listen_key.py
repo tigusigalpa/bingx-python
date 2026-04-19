@@ -28,7 +28,7 @@ class CoinMListenKeyService:
         Returns:
             Dictionary with 'listenKey' field (valid for 60 minutes)
         """
-        return self.client.request("POST", "/openApi/cswap/v1/user/auth/userDataStream")
+        return self.client.request("POST", "/openApi/user/auth/userDataStream")
 
     def extend(self, listen_key: str) -> Dict[str, Any]:
         """
@@ -38,7 +38,7 @@ class CoinMListenKeyService:
             listen_key: Listen key to extend
         """
         return self.client.request(
-            "PUT", "/openApi/cswap/v1/user/auth/userDataStream", {"listenKey": listen_key}
+            "PUT", "/openApi/user/auth/userDataStream", {"listenKey": listen_key}
         )
 
     def delete(self, listen_key: str) -> Dict[str, Any]:
@@ -49,5 +49,5 @@ class CoinMListenKeyService:
             listen_key: Listen key to delete
         """
         return self.client.request(
-            "DELETE", "/openApi/cswap/v1/user/auth/userDataStream", {"listenKey": listen_key}
+            "DELETE", "/openApi/user/auth/userDataStream", {"listenKey": listen_key}
         )

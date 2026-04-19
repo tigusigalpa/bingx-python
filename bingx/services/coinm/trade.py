@@ -39,7 +39,7 @@ class CoinMTradeService:
             order_id: Order ID
         """
         return self.client.request(
-            "DELETE", "/openApi/cswap/v1/trade/order", {"symbol": symbol, "orderId": order_id}
+            "DELETE", "/openApi/cswap/v1/trade/cancelOrder", {"symbol": symbol, "orderId": order_id}
         )
 
     def cancel_all_orders(self, symbol: str) -> Dict[str, Any]:
@@ -50,7 +50,7 @@ class CoinMTradeService:
             symbol: Trading symbol
         """
         return self.client.request(
-            "DELETE", "/openApi/cswap/v1/trade/allOpenOrders", {"symbol": symbol}
+            "POST", "/openApi/cswap/v1/trade/allOpenOrders", {"symbol": symbol}
         )
 
     def get_order(self, symbol: str, order_id: str) -> Dict[str, Any]:
@@ -62,7 +62,7 @@ class CoinMTradeService:
             order_id: Order ID
         """
         return self.client.request(
-            "GET", "/openApi/cswap/v1/trade/order", {"symbol": symbol, "orderId": order_id}
+            "GET", "/openApi/cswap/v1/trade/orderDetail", {"symbol": symbol, "orderId": order_id}
         )
 
     def get_open_orders(self, symbol: Optional[str] = None) -> Dict[str, Any]:
@@ -195,4 +195,37 @@ class CoinMTradeService:
         """
         return self.client.request(
             "GET", "/openApi/cswap/v1/user/commissionRate", {"symbol": symbol}
+        )
+
+    def close_all_positions(self, symbol: str) -> Dict[str, Any]:
+        """
+        Close all positions for a Coin-M symbol
+
+        Args:
+            symbol: Trading symbol
+        """
+        return self.client.request(
+            "POST", "/openApi/cswap/v1/trade/closeAllPositions", {"symbol": symbol}
+        )
+
+    def get_leverage(self, symbol: str) -> Dict[str, Any]:
+        """
+        Get leverage for Coin-M contract
+
+        Args:
+            symbol: Trading symbol
+        """
+        return self.client.request(
+            "GET", "/openApi/cswap/v1/trade/leverage", {"symbol": symbol}
+        )
+
+    def get_margin_type(self, symbol: str) -> Dict[str, Any]:
+        """
+        Get margin type for Coin-M contract
+
+        Args:
+            symbol: Trading symbol
+        """
+        return self.client.request(
+            "GET", "/openApi/cswap/v1/trade/marginType", {"symbol": symbol}
         )

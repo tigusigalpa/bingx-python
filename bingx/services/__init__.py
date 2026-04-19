@@ -10,6 +10,8 @@ from .listen_key import ListenKeyService
 from .sub_account import SubAccountService
 from .copy_trading import CopyTradingService
 from .twap import TWAPService
+from .agent import AgentService
+from .announcement import AnnouncementService
 
 __all__ = [
     "MarketService",
@@ -22,4 +24,6 @@ __all__ = [
     "SubAccountService",
     "CopyTradingService",
     "TWAPService",
+    "AgentService",
+    "AnnouncementService",
 ]

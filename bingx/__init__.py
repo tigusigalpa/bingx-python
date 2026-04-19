@@ -16,7 +16,7 @@ from .exceptions import (
     InsufficientBalanceException,
 )
 
-__version__ = "1.0.0"
+__version__ = "2.0.0"
 __author__ = "Igor Sazonov"
 __email__ = "sovletig@gmail.com"
 

@@ -5,6 +5,88 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0] - 2025-01-27
+
+### 🔴 Critical Fixes
+
+#### BaseHTTPClient
+- Added `X-SOURCE-KEY: BX-AI-SKILL` header by default (required by BingX API)
+- Changed default signature encoding from `base64` to `hex`
+- Implemented automatic fallback to `.pro` domain on network/timeout errors
+- Added JSON body support for Sub-Account API endpoints (`body_type="json"`)
+- Fixed `_handle_api_error()` to not throw exception on success (`code === 0`)
+
+#### Coin-M Futures
+- `get_commission_rate()` → `/openApi/cswap/v1/user/commissionRate`
+- `get_positions()` → `/openApi/cswap/v1/user/positions`
+- `get_balance()` → `/openApi/cswap/v1/user/balance`
+- `cancel_order()` → `/openApi/cswap/v1/trade/cancelOrder`
+- `get_order()` → `/openApi/cswap/v1/trade/orderDetail`
+- `cancel_all_orders()` → Changed from DELETE to POST
+- `get_funding_rate()` → `/openApi/cswap/v1/market/premiumIndex`
+- Added `get_mark_price()`, `get_recent_trades()`, `get_latest_price()`, `get_book_ticker()`
+- Added `close_all_positions()`, `get_leverage()`, `get_margin_type()`
+- Listen Key endpoints now use `/openApi/user/auth/userDataStream`
+
+### 🔧 USDT-M Endpoint Updates
+
+#### AccountService
+- `get_balance()` → Updated to v3 API `/openApi/swap/v3/user/balance`
+
+#### MarketService
+- `get_klines()` → `/openApi/swap/v3/quote/klines`
+- `get_depth()` → `/openApi/swap/v2/quote/depth`
+- `get_recent_trades()` → `/openApi/swap/v2/quote/trades`
+- `get_mark_price()` → `/openApi/swap/v2/quote/premiumIndex`
+- `get_24hr_ticker()` → `/openApi/swap/v2/quote/ticker`
+- `get_quote_funding_rate()` → Now accepts optional symbol parameter
+
+### 🔄 Sub-Account API Updates
+
+Methods now use JSON body as required:
+- `create_sub_account()` - added optional `note` parameter
+- `create_sub_account_api_key()` - updated to use `sub_uid`, `permissions` array, `ip_addresses` list
+- `edit_sub_account_api_key()` - updated to use `sub_uid`, `ip_addresses` list
+- `delete_sub_account_api_key()` - updated to use `sub_uid`
+- `query_api_key()` - updated to use `sub_uid`
+- `update_sub_account_status()` - changed to `sub_uid` and `freeze: bool` parameters
+
+### ✨ New Services
+
+#### AgentService (affiliate/broker data)
+- `get_invited_users()` - Query invited users (paginated)
+- `get_daily_commission()` - Daily commission details (invitation relationship)
+- `get_user_info()` - Query agent user information for a UID
+- `get_api_commission()` - API transaction commission (non-invitation relationship)
+- `get_partner_info()` - Query partner information
+- `get_deposit_details()` - Query deposit details of invited users
+- `get_referral_code_commission()` - Query invitation code commission data
+- `check_superior_agent()` - Check if a user is a superior agent
+
+#### AnnouncementService (public announcements)
+- `get_announcements()` - Get announcements by module type
+- `get_latest_announcements()` - Get latest announcements
+- `get_promotions()` - Get latest promotions
+- `get_product_updates()` - Get product updates
+- `get_maintenance_notices()` - Get system maintenance notices
+- `get_asset_maintenance()` - Get asset maintenance notices
+- `get_spot_listings()` - Get spot new listings
+- `get_futures_listings()` - Get futures new listings
+- `get_delistings()` - Get delisting notices
+- `get_funding_rate_notices()` - Get funding rate notices
+- `get_crypto_scout()` - Get crypto scout announcements
+
+### ⚠️ Breaking Changes
+
+- `SubAccountService.update_sub_account_status()` signature changed from `(sub_account_string: str, status: int)` to `(sub_uid: str, freeze: bool)`
+- `SubAccountService.create_sub_account_api_key()` parameter names changed: `sub_account_string` → `sub_uid`, `label` → `note`, `permissions` now `List[str]`, `ip` → `ip_addresses: List[str]`
+- `SubAccountService.edit_sub_account_api_key()` parameter names changed: `sub_account_string` → `sub_uid`, `ip` → `ip_addresses: List[str]`
+- `SubAccountService.delete_sub_account_api_key()` parameter changed: `sub_account_string` → `sub_uid`
+- `SubAccountService.query_api_key()` parameter changed: `sub_account_string` → `sub_uid`
+- Default signature encoding changed from `base64` to `hex`
+
+---
+
 ## [Unreleased] - 2026-04-05
 
 ### Added - API v3 Support
